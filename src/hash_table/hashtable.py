@@ -51,3 +51,6 @@ class HashTable:  # todo: Make it singleton
 
         return True
 
+    def get_memtable_max_size(self):
+        return self.max_size
+

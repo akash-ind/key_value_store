@@ -30,8 +30,8 @@ class HashTable:  # todo: Make it singleton
     def put(self, key, value) -> bool:
         if self.active_memtable.get_size() >= self.max_size:
             self.memtables.append(self.active_memtable)  # todo: locking and other things need to be taken care of
+            self.active_memtable = self.get_new_memtable()
 
-        self.active_memtable = self.get_new_memtable()
         return self.active_memtable.put(key, value)  # todo: exception handling etc need to be done
 
     def get_active_log_files(self):

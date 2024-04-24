@@ -8,11 +8,22 @@ class DefaultExecutor:
     def __init__(self, hash_table: HashTable):
         self.hash_table = hash_table
 
-    def execute_command(self, command: CommandDTO):
-        if command.command == CommandEnum.GET.value:
-            return self.hash_table.get(command.key)
+    def execute_get(self, key):
+        res = self.hash_table.get(key)
+        if not res:
+            return "Key not found"
+        return res.__str__()
 
-        if command.command == CommandEnum.SET.value:
-            return self.hash_table.put(command.key, command.value)
+    def execute_put(self, key, value):
+        is_success = self.hash_table.put(key, value)
+        if is_success:
+            return "Success"
 
-        return InvalidCommandException("Command executor not found")
+    def execute_command(self, command: CommandDTO) -> str:
+        if command.command == CommandEnum.GET:
+            return self.execute_get(command.key)
+
+        if command.command == CommandEnum.SET:
+            return self.execute_put(command.key, command.value)
+
+        raise InvalidCommandException("Command executor not found")

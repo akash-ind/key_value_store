@@ -9,7 +9,7 @@ class CommandEnum(Enum):
     GET = "GET"
 
     @classmethod
-    def get_command_enum(cls, command: str):
+    def get_command_enum(cls, command: str) -> "CommandEnum":
         if not (command or isinstance(command, str)):
             raise InvalidCommandException()
 

@@ -11,9 +11,13 @@ class Compaction:
         self.hash_table = hash_table
         self.put_retry_limit = 3  # todo: move to constants
         self.sleep_time = 5 * 60  # todo: move to constants
+        self.stop_compaction = False
+
+    def set_stop_compaction(self):
+        self.stop_compaction = True
 
     def run_compaction(self):
-        while True:
+        while not self.stop_compaction:
             log_files = self.hash_table.get_active_log_files()
             memtables = self.process_compaction(log_files)
             self.hash_table.replace_memtables(memtables, len(log_files))

@@ -13,6 +13,7 @@ class KeyValueStore:
         self.commands = Commands()
         self.executor = None
         self.connector = Connector()
+        self.compaction_thread = None
 
     def get_connection_command(self):
         try:
@@ -24,13 +25,17 @@ class KeyValueStore:
         self.connector.send_result(conn, result)
 
     def start_db(self):
-        conn, command = self.get_connection_command()
-        if not self.executor:
-            raise Exception("Executor not initialised")  # todo: Convert the exception
-        self.executor: DefaultExecutor
+        while True:
+            try:
+                conn, command = self.get_connection_command()
+                if not self.executor:
+                    raise Exception("Executor not initialised")  # todo: Convert the exception
+                self.executor: DefaultExecutor
 
-        res = self.executor.execute_command(command)
-        self.send_result(conn, res)
+                res = self.executor.execute_command(command)
+                self.send_result(conn, res)
+            except Exception as e:
+                print(e)
 
     def get_hashtable(self):
         if not self.initializer.is_initialised():
@@ -43,9 +48,22 @@ class KeyValueStore:
 
     def run(self):
         self.initializer.initialise()
-        compaction_thread = threading.Thread(target=self.run_compaction)
-        compaction_thread.run()
+        self.compaction_thread = threading.Thread(target=self.run_compaction)
+        self.compaction_thread.start()
         self.executor = DefaultExecutor(self.initializer.get_hash_table())
         self.connector.start_server()
         self.start_db()
 
+    def close(self):
+        self.initializer.get_compaction().set_stop_compaction()
+        self.compaction_thread.join()
+
+
+if __name__ == "__main__":
+    kv = KeyValueStore()
+    try:
+        kv.run()
+    except KeyboardInterrupt:
+        print("Shutting down...")
+        kv.close()
+        exit(0)

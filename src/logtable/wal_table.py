@@ -1,12 +1,13 @@
 import json
+import uuid
 from typing import List, Dict
 
 
 class WALTable:
 
     def __init__(self):
-        self.file_name = ""
-        self.write_file_descriptor = open(self.file_name, "ab")
+        self.file_name = f"tmp/{uuid.uuid4()}"
+        self.write_file_descriptor = open(self.file_name, "a+b", buffering=0)
         # todo: handle these file descriptors in case of error retry in case of retryable errors
         self.read_file_descriptor = open(self.file_name, "rb")
 

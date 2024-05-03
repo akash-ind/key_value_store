@@ -50,6 +50,9 @@ Install Python3.7+
   - [ ] First layer authentication and authorization.
   - [ ] Second layer data transfer.
 - [ ] Improve the key value store to use SSM Table.
+- [ ] Add more compaction strategies.
+- [ ] Add support for config files
+- [ ] Add support for logging. (Currently using print)
 
 <!-- Low Level Design -->
 ## Low Level Design

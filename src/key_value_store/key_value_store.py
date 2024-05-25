@@ -1,4 +1,5 @@
 import threading
+import traceback
 from src.key_value_store.initialiser.thread_initialiser import ThreadInitializer
 from src.key_value_store.commands.commands import Commands
 from src.exceptions.exceptions import InvalidCommandException
@@ -15,25 +16,41 @@ class KeyValueStore:
         self.connector = Connector()
         self.compaction_thread = None
 
-    def get_connection_command(self):
-        try:
-            return self.connector.get_connection_command_tuple()
-        except InvalidCommandException as e:
-            print(e)
-
     def send_result(self, conn, result):
         self.connector.send_result(conn, result)
+
+    def execute_command(self, command):
+        try:
+            return self.executor.execute_command(command)
+        except Exception as e:
+            print(traceback.format_exc())  # todo: implement a logging system
+            return e.__str__()  # can be improved
+
+    def get_connection(self):
+        return self.connector.get_connection()
+
+    def get_command(self, conn):
+        """
+        :raises CommandDecode
+        """
+        return self.connector.get_command_from_conn(conn)
+
+    def start_conn_lifecycle(self, conn):
+        while True:
+            try:
+                command = self.get_command(conn)
+            except InvalidCommandException as e:
+                self.send_result(conn, e.__str__())
+                return
+            res = self.execute_command(command)
+            self.send_result(conn, res)
 
     def start_db(self):
         while True:
             try:
-                conn, command = self.get_connection_command()
-                if not self.executor:
-                    raise Exception("Executor not initialised")  # todo: Convert the exception
-                self.executor: DefaultExecutor
-
-                res = self.executor.execute_command(command)
-                self.send_result(conn, res)
+                conn = self.get_connection()
+                t = threading.Thread(target=self.start_conn_lifecycle, args=[conn])
+                t.start()
             except Exception as e:
                 print(e)
 

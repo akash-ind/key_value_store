@@ -23,7 +23,8 @@ class WALTable:
         encoded_value = self.encode(key, value)
         offset = self.write_file_descriptor.tell()
         self.write_file_descriptor.write(encoded_value + b"\n")
-
+        self.write_file_descriptor.flush()
+        # Todo: Bug it will still not flush the data to file. OS might not corporate
         return offset
 
     def get(self, offset) -> dict:

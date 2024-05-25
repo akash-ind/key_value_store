@@ -46,8 +46,8 @@ class HashTable:  # todo: Make it singleton
         for _ in range(size_to_replace):
             memtable = self.memtables.pop(0)
             del memtable
-        self.memtables = memtables.extend(self.memtables)
-
+        memtables.extend(self.memtables)
+        self.memtables = memtables
         return True
 
     def get_memtable_max_size(self):
